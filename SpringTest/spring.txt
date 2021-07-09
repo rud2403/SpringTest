@@ -1,0 +1,134 @@
+스프링.txt
+ - 스프링에서 웹프로젝트 구성
+   1) Presentation Layer(tier) : UI 담당영역 / 웹-모바일을 구분하는 계층
+   	=> JSP(View) / html,css,js
+   	=> controller
+   
+   2) Business Logic Layer : 서비스 계층, 고객의 요구사항을 반영하는 계층
+   	=> Service(Model의 역할)
+   	 
+   3) Data Access Layer : Persistence Layer / DB 데이터 처리계층
+   	=> DAO
+   	=> MyBatis
+   	
+   4) DB
+   => Mysql
+   
+   
+   * MyBatis : DB와 DAO 객체 사이에서 효율적인 데이터 처리를 위한 프레임 워크
+   https://mybatis.org/mybatis-3/ko/index.html
+   	(SQL Mapper 라이브러리)
+   
+   - 간결한 코드처리 : 예외처리, pstmt, rs객체를 처리
+   - SQL 구문을 분리 : xml/어노테이션을 사용한 처리 가능
+   - spring과 자동연동
+   - 동적 SQL 사용가능
+   
+   * MyBatis - 스프링연동 처리 객체
+   => SqlSessionFactory 객체 : 디비연결, Sql 실행관련 동작
+   	=> SqlSessionFactoryBean 클래스를 사용해서 해당객체를 생성 
+   	
+   	
+   * 스프링 MVC( model2 방식)
+   
+   [ 기존 MVC ]
+   
+   요청 -> Controller <-> Model <-> DB
+   			| |
+   			View
+   			
+   [Front Controller 패턴을 사용한 MVC]
+   => 위임(Delegation)동작을 통해서 일부컨트롤러를 분리해서 사용
+   
+   요청 ->  Front    <-> Controller <-> Model <-> DB
+   		 Controller
+   		    | |
+   		    View
+   
+   [Spring]
+   					   |											   |
+   요청 -> Front 	<->|	 Controller <-> Service(Model) <-> DAO <-> | MyBatis <-> DB
+   		 Controller    |											   |
+   		    | |		   |											   |
+   		    View	   |											   |
+   		     		   |				Spring	MVC		 	   		   |
+   		    
+   		    
+   		    
+   
+   * 스프링MVC 처리하는 작업
+   - URI를 분석해서 적당한 컨트롤러를 매핑
+   - 컨트롤러에 필요한 메소드 호출
+   - 컨트롤러의 결과데이터를 뷰로 전달하는 작업
+   - 처리에 따른 적절한 뷰 연결
+   
+   - 파라미터의 수집
+   
+   
+   * 개발자가 처리해야하는 작업
+    - 특정 URI에 해당하는 컨트롤러를 생성
+    - 서비스 객체를 생성
+    - DAO 객체의 생성
+    - 컨트롤러의 처리를 담당하는 메소드 생성
+    - 뷰에서 전달받은 데이터 출력
+    
+   
+   * 스프링 + MyBatis
+   
+   MyBatis : Sql Mapper라이브러리 (iBatis)
+    => XML, 어노테이션을 활용한 SQL 구문을 사용가능
+    => pstmt, rs객체를 다양하게 활용가능
+    
+   1) XML 코드를 사용해서 SQL 구문, DAO 파일에서 XML코드 호출
+    장점 : SQL 구문을 XML파일로 작성, 구문의 수정/유지보수 우수함.
+    단점 : 개발의 코드분량이 증가, 복잡성이 증가
+    
+   2) 어노테이션과 인터페이스를 사용한 SQL 구문 사용
+    장점 : 별도의 DAO 없이 개발, 생산성의 효율이 좋다.
+    단점 : sql구문을 어노테이션 안에 작성 => 매번 컴파일
+    
+   3) 인터페이스/XML 코드를 적절하게 사용한 SQL 구문사용
+    장점 : 간단한 SQL 구문은 인터페이스(어노테이션), 복잡한 SQL구문은 XML파일을 사용 유연한 처리
+    단점 : 개발 방식/숙련도에 따른 작업 차이가 발생, 중요프로젝트 사용 X
+   
+   
+   * 도메인 : 개발을 진행하면서 개발에 필요한 중요한 단어(명사)
+    ex) 쇼핑몰 => 회원, 물건, 주문, 문의, 배송, ... (1차 도메인)
+    			이름, 나이, ... (2차 도메인)
+    			
+    => DB 테이블 생성( 물리적인 환경으로 구분가능한 단위 )
+    
+    
+   * MyBatis 사용 순서
+   
+   - DB생성, 테이블을 생성(개발 준비)
+   - 도메인 객체의 설계 및 클래스 생성(DTO/VO)
+   - DAO 인터페이스 객체 생성
+   - 인터페이스에 기능을 정의 (추상메소드 생성)
+   - XML Mapper생성, SQL 구문작성
+    - XML 파일에 Mapper의 위치(저장경로)를 저장
+    - XML 파일에 DTO 추가
+    - SQL 구문 작성
+   - MyBatis사용하여, XML Mapper를 인식(연결)
+   - DAO 객체를 구현
+   - 스프링에서 사용(DAO 객체 생성, 테스트에서 호출)
+   
+  * SqlSessionFactory 객체 (mybatis-spring 라이브러리에 포함) 
+  -> 디비 연결, 자원 해제 => 자동적으로 처리해주는 객체
+  -> 기본적인 트랜잭션처리, 쓰레드 처리 가능 => 안정성을 보장하는 객체
+  
+  TEST 파일 (DAOtest) -> DAO 객체 주입 -> DAO-메소드 호출 -> DAOImpl 객체 호출
+   DAO객체 주입											@Repository 사용
+   														DAO(인터페이스) 대신 DAOImpl(클래스) 사용
+   														
+   -> SqlSession 객체 생성 -> Mapper에 있는 SQL 구문실행 -> DAOImpl -> TEST 파일
+   		디비연결, 자원해제			실행결과를 저장 리턴 
+   		MyBatis설정..
+   		
+   		
+   		
+  * 비즈니스 계층 (서비스)
+  	-> 사용자의 요구사항에 맞는 동작을 구현하는 계층
+  	-> 컨트롤러와 DAO를 연결
+  	-> 외부 호출에서 persistence(영속계층)에 종속적인 상황을 막아준다.
+  	-> 컨트롤러에 많은 로직이 집중 (MVC 구조의 효율 감소)
